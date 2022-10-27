@@ -2,6 +2,43 @@
 #+author: Qiqi Jin
 #+language: en
 
+* 简介
+得益于 Deno-bridge 对 Emacs 便捷、强大的扩展能力。基于：
+
+- [[https://github.com/manateelazycat/deno-bridge][deno-bridge]]
+- [[https://github.com/wangbinyq/deno-jieba/tree/wasm][deno-jieba]]
+
+实现的 Emacs 的中文分词，能够更加方便、准确的进行中文编辑与移动。
+
+* Prerequisites
+首先需要按照 [[https://github.com/manateelazycat/deno-bridge][deno-bridge]] 的要求，按照必须的 Deno, Websocket 和 deno-bridge
+
+** Download deno-bridge-jieba
+在你自己的emacs配置文件目录中克隆项目，例如：
+
+#+begin_src sh
+git clone git@github.com:ginqi7/deno-bridge-jieba.git ~/.emacs.d/lisp/deno-bridge-jieba
+#+end_src
+
+** add the path to ‘load-path
+#+begin_src sh
+  (add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp/d/lisp/deno-bridge-jieba"))
+#+end_src
+
 * Example
 
 #+HTML: <p align="center"><img width="600px" src="./example/deno-bridge-jieba.gif"></p>
+
+* Command
+| 按键名,                         | Action                   |
+|---------------------------------+--------------------------|
+| deno-bridge-jieba-forward-word, | 向前移动一个中英文单词   |
+| deno-bridge-jibea-bacward-word, | 向后移动一个中英文单词   |
+| deno-bridge-jieba-kill-word,    | 删除光标下的一个中文单词 |
+| deno-bridge-jieba-mark-word,    | 选中光标下的一个中文单词 |
+
+
+* 相关项目
+- [[https://github.com/xuchunyang/chinese-word-at-point.el][chinese-word-at-point.el]] 
+- [[https://github.com/tumashu/pyim][pyim]]
+- [[https://github.com/cireu/jieba.el][jieba.el]]
