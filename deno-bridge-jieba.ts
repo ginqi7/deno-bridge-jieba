@@ -1,5 +1,8 @@
 import { DenoBridge } from "https://deno.land/x/denobridge@0.0.1/mod.ts";
-import { cut } from "https://cdn.jsdelivr.net/gh/wangbinyq/deno-jieba@wasm/mod.ts";
+import {
+  cut,
+  tokenize,
+} from "https://cdn.jsdelivr.net/gh/wangbinyq/deno-jieba@wasm/mod.ts";
 
 const bridge = new DenoBridge(
   Deno.args[0],
@@ -7,32 +10,16 @@ const bridge = new DenoBridge(
   Deno.args[2],
   messageDispatcher
 );
-
 const sentence = {
   raw: "",
-  words: [],
-  position: [],
+  tokens: [],
 };
 
 async function parseSentence(message: string) {
   if (sentence.raw == undefined || sentence.raw != message) {
     sentence.raw = message;
-    sentence.words = await cut(message);
-    sentence.position = computePosition(sentence.words);
-    console.log(sentence.raw);
-    console.log(sentence.words);
+    sentence.tokens = await tokenize(message);
   }
-}
-
-function computePosition(words: string[]) {
-  var begin = 0;
-  var position = [];
-  for (var i = 0; i < words.length; i++) {
-    var end = begin + words[i].replace(/[^\x00-\xff]/g, "__").length; // chinese two width, ascii one width
-    position.push([begin, end]);
-    begin = end;
-  }
-  return position;
 }
 
 async function messageDispatcher(message: string) {
@@ -40,94 +27,85 @@ async function messageDispatcher(message: string) {
   const cmd = info[1][0].trim();
   const sentenceStr = info[1][1];
   const currentColumn = info[1][2];
-    await parseSentence(sentenceStr);
-    if (cmd == "forward-word") {
-        forwardWord(currentColumn);
-    } else if (cmd == "bacward-word") {
-        bacwardWord(currentColumn);
-    } else if (cmd == "mark-word") {
-        markWord(currentColumn);
-    } else if (cmd == "kill-word") {
-        killWord(currentColumn);
-    }
+  await parseSentence(sentenceStr);
+  if (cmd == "forward-word") {
+    forwardWord(currentColumn);
+  } else if (cmd == "backward-word") {
+    bacwardWord(currentColumn);
+  } else if (cmd == "mark-word") {
+    markWord(currentColumn);
+  } else if (cmd == "kill-word") {
+    killWord(currentColumn);
+  }
 }
 
 function killWord(column: number) {
-    const position = sentence.position;
-    for (var i = 0; i < position.length; i++) {
-        const positionRight = position[i][1];
-        const positionLeft = position[i][0];
-        if (column >= positionLeft && column < positionRight) {
-            // mark work from begin to end.
-            var emacsCmd = `(save-excursion \
-  (let ((begin (progn (move-to-column ${positionLeft}) (point))) \
-        (end (progn (move-to-column ${positionRight}) (point)))) \
-    (kill-region begin end)))
-`;
-            console.log(emacsCmd);
-            bridge.evalInEmacs(emacsCmd);
-            return;
-        }
+  const tokens = sentence.tokens;
+  for (var i = 0; i < tokens.length; i++) {
+    var token = tokens[i];
+    var start = token.start;
+    var end = token.end;
+    if (column >= token.start && column < token.end) {
+      var emacsCmd = `(denote-bridge-jieba-kill-from ${start} ${end})`;
+      runAndLog(emacsCmd)
+      return;
     }
-} 
+  }
+}
 
 function markWord(column: number) {
-  const position = sentence.position;
-  for (var i = 0; i < position.length; i++) {
-    const positionRight = position[i][1];
-    const positionLeft = position[i][0];
-    if (column >= positionLeft && column < positionRight) {
-      // mark work from begin to end.
-      var emacsCmd = `(progn \
-(move-to-column ${positionLeft}) \
-(set-mark (save-excursion (move-to-column ${positionRight}) (point)))) `;
-      console.log(emacsCmd);
-      bridge.evalInEmacs(emacsCmd);
+  var tokens = sentence.tokens;
+  for (var i = 0; i < tokens.length; i++) {
+    const start = tokens[i].start;
+    const end = tokens[i].end;
+    if (column >= start && column < end) {
+      // mark work from start to end.
+      var emacsCmd = `(denote-bridge-jieba-mark-from ${start} ${end})`;
+      runAndLog(emacsCmd)
       return;
     }
   }
 }
 
 function forwardWord(column: number) {
-  const position = sentence.position;
-  for (var i = 0; i < position.length; i++) {
-    const positionRight = position[i][1];
-    const positionLeft = position[i][0];
-    var movePosition: string;
-    console.log(position[i]);
-    if (column >= positionLeft && column < positionRight) {
-      // jump to word right
-      movePosition = positionRight;
-      var emacsCmd = `(move-to-column ${movePosition})`;
-      console.log(emacsCmd);
-      bridge.evalInEmacs(emacsCmd);
+  const tokens = sentence.tokens;
+  for (var i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    if (column >= token.start && column < token.end) {
+      // jump to word end
+      var movePosition = token.end;
+      var emacsCmd = `(denote-bridge-jieba-goto ${movePosition})`;
+      runAndLog(emacsCmd)
       return;
     }
   }
 }
 
 function bacwardWord(column: number) {
-  const position = sentence.position;
-  for (var i = 0; i < position.length; i++) {
-    const positionRight = position[i][1];
-    const positionLeft = position[i][0];
+  const tokens = sentence.tokens;
+  for (var i = 0; i < tokens.length; i++) {
+    const start = tokens[i].start;
+    const end = tokens[i].end;
     var movePosition: string;
-    if (column > positionLeft && column < positionRight) {
+    if (column > start && column < end) {
       // when current column is in the middle of a word
       // jump to word beginning
-      movePosition = positionLeft;
-      var emacsCmd = `(move-to-column ${movePosition})`;
-      console.log(emacsCmd);
-      bridge.evalInEmacs(emacsCmd);
+      movePosition = start;
+      var emacsCmd = `(denote-bridge-jieba-goto ${movePosition})`;
+      runAndLog(emacsCmd)
       return;
-    } else if (column == positionLeft) {
+    } else if (column == start) {
       // when current column is in the beginning of a word
       // jump to pre word beginning
-      movePosition = i == 0 ? 0 : position[i - 1][0];
-      var emacsCmd = `(move-to-column ${movePosition})`;
-      console.log(emacsCmd);
-      bridge.evalInEmacs(emacsCmd);
+      movePosition = i == 0 ? 0 : tokens[i - 1].start;
+      var emacsCmd = `(denote-bridge-jieba-goto ${movePosition})`;
+      runAndLog(emacsCmd)
       return;
     }
   }
+}
+
+function runAndLog(cmd: string) {
+    console.log(cmd);
+    bridge.evalInEmacs(cmd);
 }

@@ -20,12 +20,15 @@
 
 ;;; Commentary:
 
-;; 
+;;
 
 ;;; Code:
 
 (require 'deno-bridge)
-(setq deno-bridge-demo-ts-path (concat (file-name-directory load-file-name) "deno-bridge-jieba.ts"))
+(setq deno-bridge-demo-ts-path
+      (concat
+       (file-name-directory load-file-name)
+       "deno-bridge-jieba.ts"))
 
 (defun deno-bridge-jieba-start ()
   (interactive)
@@ -35,34 +38,68 @@
   (interactive)
   (deno-bridge-exit)
   (deno-bridge-jieba-start)
-  (list-processes)
-  )
+  (list-processes))
 
 (defun denote-bridge-jieba-parse-current-line ()
   (interactive)
-  (deno-bridge-call "deno-bridge-jieba" "parse" (thing-at-point 'line)))
+  (deno-bridge-call "deno-bridge-jieba" "parse"
+                    (thing-at-point 'line)))
 
 (defun denote-bridge-jieba-forward-word ()
   (interactive)
-  (deno-bridge-call "deno-bridge-jieba" "forward-word" (thing-at-point 'line) (current-column)))
+  (if (or (= (line-end-position) (point)) ;; if current point is line end, just forward-word
+          ;; if following char is single width, is ASCII char, just forward-word
+          (denote-bridge-jieba-single-width-char?))
+      (forward-word) 
+    (deno-bridge-call "deno-bridge-jieba" "forward-word"
+                      (thing-at-point 'line)
+                      (- (point) (line-beginning-position)))))
 
-(defun denote-bridge-jieba-bacward-word ()
+(defun denote-bridge-jieba-backward-word ()
   (interactive)
-  (deno-bridge-call "deno-bridge-jieba" "bacward-word" (thing-at-point 'line) (current-column)))
+  (if (or (= (line-beginning-position) (point)) ;; if current point is line beginning, just backward-word
+          ;; if following char is single width, is ASCII char, just backward-word
+          (denote-bridge-jieba-single-width-char?))
+      (backward-word) 
+  (deno-bridge-call "deno-bridge-jieba" "backward-word"
+                    (thing-at-point 'line)
+                    (- (point) (line-beginning-position)))))
 
 
 (defun denote-bridge-jieba-mark-word ()
   (interactive)
-  (deno-bridge-call "deno-bridge-jieba" "mark-word" (thing-at-point 'line) (current-column)))
+  (deno-bridge-call "deno-bridge-jieba" "mark-word"
+                    (thing-at-point 'line)
+                    (- (point) (line-beginning-position))))
 
 (defun denote-bridge-jieba-kill-word ()
   (interactive)
-  (deno-bridge-call "deno-bridge-jieba" "kill-word" (thing-at-point 'line) (current-column)))
+  (deno-bridge-call "deno-bridge-jieba" "kill-word"
+                    (thing-at-point 'line)
+                    (- (point) (line-beginning-position))))
 
 (defun denote-bridge-jieba-backward-kill-word ()
   (interactive)
-  (deno-bridge-call "deno-bridge-jieba" "backward-kill-word" (thing-at-point 'line) (current-column)))
+  (deno-bridge-call "deno-bridge-jieba" "backward-kill-word"
+                    (thing-at-point 'line)
+                    (- (point) (line-beginning-position))))
+
+(defun denote-bridge-jieba-kill-from (begin end)
+  (kill-region
+   (+ (line-beginning-position) begin)
+   (+ (line-beginning-position) end)))
+
+(defun denote-bridge-jieba-mark-from (begin end)
+  (set-mark (+ (line-beginning-position) begin))
+  (goto-char (+ (line-beginning-position) end)))
+
+
+(defun denote-bridge-jieba-goto (num)
+  (beginning-of-line)
+  (forward-char num))
+
+(defun denote-bridge-jieba-single-width-char? ()
+  (= (string-width (string (following-char))) 1))
 
 (provide 'deno-bridge-jieba)
 ;;; deno-bridge-jieba.el ends here
-
