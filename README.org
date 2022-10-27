@@ -1,0 +1,7 @@
+#+title: Deno bridge jieba
+#+author: Qiqi Jin
+#+language: en
+
+* Example
+
+#+HTML: <p align="center"><img width="600px" src="./example/deno-bridge-jieba.gif"></p>
