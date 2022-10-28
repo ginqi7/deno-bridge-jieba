@@ -46,7 +46,7 @@ function killWord(column: number) {
     var start = token.start;
     var end = token.end;
     if (column >= token.start && column < token.end) {
-      var emacsCmd = `(denote-bridge-jieba-kill-from ${start} ${end})`;
+      var emacsCmd = `(deno-bridge-jieba-kill-from ${start} ${end})`;
       runAndLog(emacsCmd)
       return;
     }
@@ -60,7 +60,7 @@ function markWord(column: number) {
     const end = tokens[i].end;
     if (column >= start && column < end) {
       // mark work from start to end.
-      var emacsCmd = `(denote-bridge-jieba-mark-from ${start} ${end})`;
+      var emacsCmd = `(deno-bridge-jieba-mark-from ${start} ${end})`;
       runAndLog(emacsCmd)
       return;
     }
@@ -74,7 +74,7 @@ function forwardWord(column: number) {
     if (column >= token.start && column < token.end) {
       // jump to word end
       var movePosition = token.end;
-      var emacsCmd = `(denote-bridge-jieba-goto ${movePosition})`;
+      var emacsCmd = `(deno-bridge-jieba-goto ${movePosition})`;
       runAndLog(emacsCmd)
       return;
     }
@@ -91,14 +91,14 @@ function bacwardWord(column: number) {
       // when current column is in the middle of a word
       // jump to word beginning
       movePosition = start;
-      var emacsCmd = `(denote-bridge-jieba-goto ${movePosition})`;
+      var emacsCmd = `(deno-bridge-jieba-goto ${movePosition})`;
       runAndLog(emacsCmd)
       return;
     } else if (column == start) {
       // when current column is in the beginning of a word
       // jump to pre word beginning
       movePosition = i == 0 ? 0 : tokens[i - 1].start;
-      var emacsCmd = `(denote-bridge-jieba-goto ${movePosition})`;
+      var emacsCmd = `(deno-bridge-jieba-goto ${movePosition})`;
       runAndLog(emacsCmd)
       return;
     }
