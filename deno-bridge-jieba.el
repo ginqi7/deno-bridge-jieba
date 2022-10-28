@@ -22,28 +22,47 @@
 
 ;;
 
+;;; Commands:
+;;
+;; Below are complete command list:
+;;
+;;  `deno-bridge-jieba-start'
+;;    Start deno bridge jieba.
+;;  `deno-bridge-jieba-restart'
+;;    Restart deno bridge jieba and show process.
+;;  `deno-bridge-jieba-forward-word'
+;;    Send request to deno for forward chinese word.
+;;  `deno-bridge-jieba-backward-word'
+;;    Send request to deno for backward chinese word.
+;;  `deno-bridge-jieba-mark-word'
+;;    Send request to deno for mark chinese word.
+;;  `deno-bridge-jieba-kill-word'
+;;    Send request to deno for kill chinese word.
+;;
+;;; Customizable Options:
+;;
+;; Below are customizable option list:
+;;
+
 ;;; Code:
 
 (require 'deno-bridge)
 (setq deno-bridge-demo-ts-path (concat (file-name-directory load-file-name) "deno-bridge-jieba.ts"))
-(deno-bridge-jieba-start)
 
 (defun deno-bridge-jieba-start ()
+  "Start deno bridge jieba."
   (interactive)
   (deno-bridge-start "deno-bridge-jieba" deno-bridge-demo-ts-path))
 
 (defun deno-bridge-jieba-restart ()
+  "Restart deno bridge jieba and show process."
   (interactive)
   (deno-bridge-exit)
   (deno-bridge-jieba-start)
   (list-processes))
 
-(defun deno-bridge-jieba-parse-current-line ()
-  (interactive)
-  (deno-bridge-call "deno-bridge-jieba" "parse"
-                    (thing-at-point 'line)))
-
 (defun deno-bridge-jieba-forward-word ()
+  "Send request to deno for forward chinese word."
   (interactive)
   (if (or (= (line-end-position) (point)) ;; if current point is line end, just forward-word
           ;; if following char is single width, is ASCII char, just forward-word
@@ -54,6 +73,7 @@
                       (- (point) (line-beginning-position)))))
 
 (defun deno-bridge-jieba-backward-word ()
+  "Send request to deno for backward chinese word."
   (interactive)
   (if (or (= (line-beginning-position) (point)) ;; if current point is line beginning, just backward-word
           ;; if following char is single width, is ASCII char, just backward-word
@@ -65,39 +85,40 @@
 
 
 (defun deno-bridge-jieba-mark-word ()
+  "Send request to deno for mark chinese word."
   (interactive)
   (deno-bridge-call "deno-bridge-jieba" "mark-word"
                     (thing-at-point 'line)
                     (- (point) (line-beginning-position))))
 
 (defun deno-bridge-jieba-kill-word ()
+  "Send request to deno for kill chinese word."
   (interactive)
   (deno-bridge-call "deno-bridge-jieba" "kill-word"
                     (thing-at-point 'line)
                     (- (point) (line-beginning-position))))
 
-(defun deno-bridge-jieba-backward-kill-word ()
-  (interactive)
-  (deno-bridge-call "deno-bridge-jieba" "backward-kill-word"
-                    (thing-at-point 'line)
-                    (- (point) (line-beginning-position))))
-
 (defun deno-bridge-jieba-kill-from (begin end)
+  "Send request to deno for killing char on between BEGIN and END."
   (kill-region
    (+ (line-beginning-position) begin)
    (+ (line-beginning-position) end)))
 
 (defun deno-bridge-jieba-mark-from (begin end)
+  "Send request to deno for marking char on between BEGIN and END."
   (set-mark (+ (line-beginning-position) begin))
   (goto-char (+ (line-beginning-position) end)))
 
 
 (defun deno-bridge-jieba-goto (num)
+  "Send request to deno for goto char on current line by NUM."
   (beginning-of-line)
   (forward-char num))
 
 (defun deno-bridge-jieba-single-width-char? ()
+  "Check following char if a single width char."
   (= (string-width (string (following-char))) 1))
 
+(deno-bridge-jieba-start) ;; start deno-bridge-jieba when load package.
 (provide 'deno-bridge-jieba)
 ;;; deno-bridge-jieba.el ends here
