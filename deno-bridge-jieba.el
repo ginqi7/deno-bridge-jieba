@@ -25,10 +25,8 @@
 ;;; Code:
 
 (require 'deno-bridge)
-(setq deno-bridge-demo-ts-path
-      (concat
-       (file-name-directory load-file-name)
-       "deno-bridge-jieba.ts"))
+(setq deno-bridge-demo-ts-path (concat (file-name-directory load-file-name) "deno-bridge-jieba.ts"))
+(deno-bridge-jieba-start)
 
 (defun deno-bridge-jieba-start ()
   (interactive)
