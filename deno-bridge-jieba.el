@@ -61,41 +61,66 @@
   (deno-bridge-jieba-start)
   (list-processes))
 
+(defun deno-bridge-jieba-blank-after-cursor-p ()
+  "Have blank after cursor."
+  (not (split-string (buffer-substring-no-properties
+                      (min (1+ (point)) (point-at-eol))
+                      (point)))))
+
+(defun deno-bridge-jieba-blank-before-cursor-p ()
+  "Have blank before cursor."
+  (not (split-string (buffer-substring-no-properties
+                      (max (1- (point)) (line-beginning-position))
+                      (point)))))
+
+(defun deno-bridge-jieba-single-char-after-cursor-p ()
+  "Check following char if a single width char."
+  (= (string-width (string (char-after))) 1))
+
+(defun deno-bridge-jieba-single-char-before-cursor-p ()
+  "Check before char if a single width char."
+  (= (string-width (string (char-before))) 1))
+
 (defun deno-bridge-jieba-forward-word ()
   "Send request to deno for forward chinese word."
   (interactive)
-  (if (or (= (line-end-position) (point)) ;; if current point is line end, just forward-word
-          ;; if following char is single width, is ASCII char, just forward-word
-          (deno-bridge-jieba-single-width-char?))
-      (forward-word) 
-    (deno-bridge-call "deno-bridge-jieba" "forward-word"
-                      (thing-at-point 'line)
-                      (- (point) (line-beginning-position)))))
+  (cond ((= (line-end-position) (point))
+         (forward-word))
+        ((deno-bridge-jieba-blank-after-cursor-p)
+         (search-forward-regexp "\\s-+" nil (point-at-eol)))
+        ((deno-bridge-jieba-single-char-after-cursor-p)
+         (forward-word))
+        (t
+         (deno-bridge-call "deno-bridge-jieba" "forward-word"
+                           (thing-at-point 'line nil)
+                           (- (point) (line-beginning-position))))))
 
 (defun deno-bridge-jieba-backward-word ()
   "Send request to deno for backward chinese word."
   (interactive)
-  (if (or (= (line-beginning-position) (point)) ;; if current point is line beginning, just backward-word
-          ;; if following char is single width, is ASCII char, just backward-word
-          (deno-bridge-jieba-single-width-char?))
-      (backward-word) 
-  (deno-bridge-call "deno-bridge-jieba" "backward-word"
-                    (thing-at-point 'line)
-                    (- (point) (line-beginning-position)))))
-
+  (cond ((= (line-beginning-position) (point))
+         (backward-word))
+        ((deno-bridge-jieba-blank-before-cursor-p)
+         (search-backward-regexp "\\s-+" nil (point-at-bol)))
+        ((deno-bridge-jieba-single-char-before-cursor-p)
+         (backward-word))
+        (t
+         (deno-bridge-call "deno-bridge-jieba" "backward-word"
+                           (thing-at-point 'line nil)
+                           (- (point) (line-beginning-position))))))
 
 (defun deno-bridge-jieba-mark-word ()
   "Send request to deno for mark chinese word."
   (interactive)
   (deno-bridge-call "deno-bridge-jieba" "mark-word"
-                    (thing-at-point 'line)
+                    (thing-at-point 'line nil)
                     (- (point) (line-beginning-position))))
 
 (defun deno-bridge-jieba-kill-word ()
   "Send request to deno for kill chinese word."
   (interactive)
   (deno-bridge-call "deno-bridge-jieba" "kill-word"
-                    (thing-at-point 'line)
+                    (thing-at-point 'line nil)
                     (- (point) (line-beginning-position))))
 
 (defun deno-bridge-jieba-kill-from (begin end)
@@ -114,10 +139,6 @@
   "Send request to deno for goto char on current line by NUM."
   (beginning-of-line)
   (forward-char num))
-
-(defun deno-bridge-jieba-single-width-char? ()
-  "Check following char if a single width char."
-  (= (string-width (string (following-char))) 1))
 
 (deno-bridge-jieba-start) ;; start deno-bridge-jieba when load package.
 (provide 'deno-bridge-jieba)
