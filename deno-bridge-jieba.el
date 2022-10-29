@@ -123,6 +123,13 @@
                     (thing-at-point 'line nil)
                     (- (point) (line-beginning-position))))
 
+(defun deno-bridge-jieba-backward-kill-word ()
+  "Send request to deno for kill chinese word backward."
+  (interactive)
+  (deno-bridge-call "deno-bridge-jieba" "backward-kill-word"
+                    (thing-at-point 'line nil)
+                    (- (point) (line-beginning-position))))
+
 (defun deno-bridge-jieba-kill-from (begin end)
   "Send request to deno for killing char on between BEGIN and END."
   (kill-region
