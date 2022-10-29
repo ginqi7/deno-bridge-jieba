@@ -36,6 +36,8 @@ async function messageDispatcher(message: string) {
     markWord(currentColumn);
   } else if (cmd == "kill-word") {
     killWord(currentColumn);
+  } else if (cmd == "backward-kill-word") {
+    backwardKillWord(currentColumn);
   }
 }
 
@@ -46,8 +48,20 @@ function killWord(column: number) {
     var start = token.start;
     var end = token.end;
     if (column >= token.start && column < token.end) {
-      var emacsCmd = `(deno-bridge-jieba-kill-from ${start} ${end})`;
-      runAndLog(emacsCmd)
+      var emacsCmd = `(deno-bridge-jieba-kill-from ${column} ${token.end})`;
+      runAndLog(emacsCmd);
+      return;
+    }
+  }
+}
+
+function backwardKillWord(column: number) {
+  const tokens = sentence.tokens;
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    if (column > token.start && column <= token.end) {
+      const emacsCmd = `(deno-bridge-jieba-kill-from ${token.start} ${column})`;
+      runAndLog(emacsCmd);
       return;
     }
   }
@@ -87,7 +101,7 @@ function bacwardWord(column: number) {
     const start = tokens[i].start;
     const end = tokens[i].end;
     var movePosition: string;
-      
+
     if (column > start && column <= end) {
       // when current column is in the middle of a word
       // jump to word beginning
@@ -107,6 +121,6 @@ function bacwardWord(column: number) {
 }
 
 function runAndLog(cmd: string) {
-    console.log(cmd);
-    bridge.evalInEmacs(cmd);
+  console.log(cmd);
+  bridge.evalInEmacs(cmd);
 }
