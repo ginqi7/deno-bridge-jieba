@@ -87,7 +87,8 @@ function bacwardWord(column: number) {
     const start = tokens[i].start;
     const end = tokens[i].end;
     var movePosition: string;
-    if (column > start && column < end) {
+      
+    if (column > start && column <= end) {
       // when current column is in the middle of a word
       // jump to word beginning
       movePosition = start;
