@@ -38,6 +38,8 @@
 ;;    Send request to deno for mark chinese word.
 ;;  `deno-bridge-jieba-kill-word'
 ;;    Send request to deno for kill chinese word.
+;;  `deno-bridge-jieba-backward-kill-word'
+;;    Send request to deno for kill chinese word backward.
 ;;
 ;;; Customizable Options:
 ;;

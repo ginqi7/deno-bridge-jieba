@@ -45,8 +45,6 @@ function killWord(column: number) {
   const tokens = sentence.tokens;
   for (var i = 0; i < tokens.length; i++) {
     var token = tokens[i];
-    var start = token.start;
-    var end = token.end;
     if (column >= token.start && column < token.end) {
       var emacsCmd = `(deno-bridge-jieba-kill-from ${column} ${token.end})`;
       runAndLog(emacsCmd);
