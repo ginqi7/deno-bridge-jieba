@@ -49,7 +49,10 @@
 ;;; Code:
 
 (require 'deno-bridge)
-(setq deno-bridge-demo-ts-path (concat (file-name-directory load-file-name) "deno-bridge-jieba.ts"))
+(setq deno-bridge-demo-ts-path
+      (concat
+       (file-name-directory load-file-name)
+       "deno-bridge-jieba.ts"))
 
 (defun deno-bridge-jieba-start ()
   "Start deno bridge jieba."
@@ -65,15 +68,17 @@
 
 (defun deno-bridge-jieba-blank-after-cursor-p ()
   "Have blank after cursor."
-  (not (split-string (buffer-substring-no-properties
-                      (min (1+ (point)) (point-at-eol))
-                      (point)))))
+  (not (split-string
+        (buffer-substring-no-properties
+         (min (1+ (point)) (point-at-eol))
+         (point)))))
 
 (defun deno-bridge-jieba-blank-before-cursor-p ()
   "Have blank before cursor."
-  (not (split-string (buffer-substring-no-properties
-                      (max (1- (point)) (line-beginning-position))
-                      (point)))))
+  (not (split-string
+        (buffer-substring-no-properties
+         (max (1- (point)) (line-beginning-position))
+         (point)))))
 
 (defun deno-bridge-jieba-single-char-after-cursor-p ()
   "Check following char if a single width char."
@@ -86,51 +91,45 @@
 (defun deno-bridge-jieba-forward-word ()
   "Send request to deno for forward chinese word."
   (interactive)
-  (cond ((= (line-end-position) (point))
-         (forward-word))
-        ((deno-bridge-jieba-blank-after-cursor-p)
-         (search-forward-regexp "\\s-+" nil (point-at-eol)))
-        ((deno-bridge-jieba-single-char-after-cursor-p)
-         (forward-word))
-        (t
-         (deno-bridge-call "deno-bridge-jieba" "forward-word"
-                           (thing-at-point 'line nil)
-                           (- (point) (line-beginning-position))))))
+  (cond
+   ((= (line-end-position) (point))
+    (forward-word))
+   ((deno-bridge-jieba-blank-after-cursor-p)
+    (search-forward-regexp "\\s-+" nil (point-at-eol)))
+   ((deno-bridge-jieba-single-char-after-cursor-p)
+    (forward-word))
+   (t
+    (deno-bridge-call-jieba-on-current-line "forward-word"))))
 
 (defun deno-bridge-jieba-backward-word ()
   "Send request to deno for backward chinese word."
   (interactive)
-  (cond ((= (line-beginning-position) (point))
-         (backward-word))
-        ((deno-bridge-jieba-blank-before-cursor-p)
-         (search-backward-regexp "\\s-+" nil (point-at-bol)))
-        ((deno-bridge-jieba-single-char-before-cursor-p)
-         (backward-word))
-        (t
-         (deno-bridge-call "deno-bridge-jieba" "backward-word"
-                           (thing-at-point 'line nil)
-                           (- (point) (line-beginning-position))))))
+  (cond
+   ((= (line-beginning-position) (point))
+    (backward-word))
+   ((deno-bridge-jieba-blank-before-cursor-p)
+    (search-backward-regexp "\\s-+" nil (point-at-bol)))
+   ((deno-bridge-jieba-single-char-before-cursor-p)
+    (backward-word))
+   (t
+    (deno-bridge-call-jieba-on-current-line "backward-word")
+    )))
 
 (defun deno-bridge-jieba-mark-word ()
   "Send request to deno for mark chinese word."
   (interactive)
-  (deno-bridge-call "deno-bridge-jieba" "mark-word"
-                    (thing-at-point 'line nil)
-                    (- (point) (line-beginning-position))))
+  (deno-bridge-call-jieba-on-current-line "mark-word"))
+  
 
 (defun deno-bridge-jieba-kill-word ()
   "Send request to deno for kill chinese word."
   (interactive)
-  (deno-bridge-call "deno-bridge-jieba" "kill-word"
-                    (thing-at-point 'line nil)
-                    (- (point) (line-beginning-position))))
+  (deno-bridge-call-jieba-on-current-line "backward-kill-word"))
 
 (defun deno-bridge-jieba-backward-kill-word ()
   "Send request to deno for kill chinese word backward."
   (interactive)
-  (deno-bridge-call "deno-bridge-jieba" "backward-kill-word"
-                    (thing-at-point 'line nil)
-                    (- (point) (line-beginning-position))))
+  (deno-bridge-call-jieba-on-current-line "backward-kill-word"))
 
 (defun deno-bridge-jieba-kill-from (begin end)
   "Send request to deno for killing char on between BEGIN and END."
@@ -148,6 +147,12 @@
   "Send request to deno for goto char on current line by NUM."
   (beginning-of-line)
   (forward-char num))
+
+(defun deno-bridge-call-jieba-on-current-line(func-name)
+  "Call jieba function on current line by FUNC-NAME."
+  (deno-bridge-call "deno-bridge-jieba" func-name
+                    (thing-at-point 'line nil)
+                    (- (point) (line-beginning-position))))
 
 (deno-bridge-jieba-start) ;; start deno-bridge-jieba when load package.
 (provide 'deno-bridge-jieba)
