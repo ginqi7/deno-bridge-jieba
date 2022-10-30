@@ -80,6 +80,15 @@
          (max (1- (point)) (line-beginning-position))
          (point)))))
 
+(defun deno-bridge-jieba-punctuation-char-after-cursor-p ()
+  "Check following char if a punctuation."
+  (deno-bridge-jieba-punctuation-char-p (string (char-after))))
+
+(defun deno-bridge-jieba-punctuation-char-before-cursor-p ()
+  "Check before char if a punctuation."
+  (deno-bridge-jieba-punctuation-char-p (string (char-before))))
+
+
 (defun deno-bridge-jieba-single-char-after-cursor-p ()
   "Check following char if a single width char."
   (= (string-width (string (char-after))) 1))
@@ -98,8 +107,7 @@
     (search-forward-regexp "\\s-+" nil (point-at-eol)))
    ((deno-bridge-jieba-single-char-after-cursor-p)
     (forward-word))
-   (t
-    (deno-bridge-call-jieba-on-current-line "forward-word"))))
+   (t (deno-bridge-call-jieba-on-current-line "forward-word"))))
 
 (defun deno-bridge-jieba-backward-word ()
   "Send request to deno for backward chinese word."
@@ -111,25 +119,38 @@
     (search-backward-regexp "\\s-+" nil (point-at-bol)))
    ((deno-bridge-jieba-single-char-before-cursor-p)
     (backward-word))
-   (t
-    (deno-bridge-call-jieba-on-current-line "backward-word")
-    )))
+   (t (deno-bridge-call-jieba-on-current-line "backward-word"))))
 
 (defun deno-bridge-jieba-mark-word ()
   "Send request to deno for mark chinese word."
   (interactive)
   (deno-bridge-call-jieba-on-current-line "mark-word"))
-  
 
 (defun deno-bridge-jieba-kill-word ()
   "Send request to deno for kill chinese word."
   (interactive)
-  (deno-bridge-call-jieba-on-current-line "backward-kill-word"))
+  (cond
+   ((or
+     (deno-bridge-jieba-blank-after-cursor-p)
+     (deno-bridge-jieba-punctuation-char-after-cursor-p))
+    (delete-char 1)
+    (deno-bridge-jieba-kill-word))
+   ((deno-bridge-jieba-single-char-after-cursor-p)
+    (kill-word 1))
+   (t (deno-bridge-call-jieba-on-current-line "kill-word"))))
 
 (defun deno-bridge-jieba-backward-kill-word ()
   "Send request to deno for kill chinese word backward."
   (interactive)
-  (deno-bridge-call-jieba-on-current-line "backward-kill-word"))
+  (cond
+   ((or
+     (deno-bridge-jieba-blank-before-cursor-p)
+     (deno-bridge-jieba-punctuation-char-before-cursor-p))
+    (backward-delete-char 1)
+    (deno-bridge-jieba-backward-kill-word))
+   ((deno-bridge-jieba-single-char-before-cursor-p)
+    (backward-kill-word 1))
+   (t (deno-bridge-call-jieba-on-current-line "backward-kill-word"))))
 
 (defun deno-bridge-jieba-kill-from (begin end)
   "Send request to deno for killing char on between BEGIN and END."
@@ -153,6 +174,10 @@
   (deno-bridge-call "deno-bridge-jieba" func-name
                     (thing-at-point 'line nil)
                     (- (point) (line-beginning-position))))
+
+(defun deno-bridge-jieba-punctuation-char-p (char)
+  "Check if the CHAR is a punct."
+  (string-match "[[:punct:]]+" char))
 
 (deno-bridge-jieba-start) ;; start deno-bridge-jieba when load package.
 (provide 'deno-bridge-jieba)
