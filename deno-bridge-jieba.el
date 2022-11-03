@@ -49,7 +49,7 @@
 ;;; Code:
 
 (require 'deno-bridge)
-(setq deno-bridge-demo-ts-path
+(setq deno-bridge-jieba-ts-path
       (concat
        (file-name-directory load-file-name)
        "deno-bridge-jieba.ts"))
@@ -57,7 +57,7 @@
 (defun deno-bridge-jieba-start ()
   "Start deno bridge jieba."
   (interactive)
-  (deno-bridge-start "deno-bridge-jieba" deno-bridge-demo-ts-path))
+  (deno-bridge-start "deno-bridge-jieba" deno-bridge-jieba-ts-path))
 
 (defun deno-bridge-jieba-restart ()
   "Restart deno bridge jieba and show process."
