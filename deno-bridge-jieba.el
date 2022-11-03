@@ -133,8 +133,7 @@
    ((or
      (deno-bridge-jieba-blank-after-cursor-p)
      (deno-bridge-jieba-punctuation-char-after-cursor-p))
-    (delete-char 1)
-    (deno-bridge-jieba-kill-word))
+    (delete-char 1))
    ((deno-bridge-jieba-single-char-after-cursor-p)
     (kill-word 1))
    (t (deno-bridge-call-jieba-on-current-line "kill-word"))))
@@ -146,8 +145,7 @@
    ((or
      (deno-bridge-jieba-blank-before-cursor-p)
      (deno-bridge-jieba-punctuation-char-before-cursor-p))
-    (backward-delete-char 1)
-    (deno-bridge-jieba-backward-kill-word))
+    (backward-delete-char 1))
    ((deno-bridge-jieba-single-char-before-cursor-p)
     (backward-kill-word 1))
    (t (deno-bridge-call-jieba-on-current-line "backward-kill-word"))))
