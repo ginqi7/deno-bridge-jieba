@@ -18,7 +18,8 @@ interface Sentence {
 let sentence: Sentence;
 
 function parseSentence(message: string) {
-  if (sentence == undefined) {
+  if (sentence == undefined ||
+      sentence.raw != message) {
     sentence = {
       raw: message,
       tokens: tokenize(message),
