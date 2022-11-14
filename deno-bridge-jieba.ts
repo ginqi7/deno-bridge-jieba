@@ -17,7 +17,6 @@ interface Sentence {
 }
 let sentence: Sentence;
 
-
 function parseSentence(message: string) {
   if (sentence == undefined) {
     sentence = {
@@ -33,6 +32,7 @@ function messageDispatcher(message: string) {
   const sentenceStr = info[1][1];
   const currentColumn = info[1][2];
   parseSentence(sentenceStr);
+  // console.log(sentence);
   if (cmd == "forward-word") {
     forwardWord(currentColumn);
   } else if (cmd == "backward-word") {
