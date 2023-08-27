@@ -2,7 +2,7 @@ import { DenoBridge } from "https://deno.land/x/denobridge@0.0.1/mod.ts";
 import {
   type Token,
   tokenize,
-} from "https://cdn.jsdelivr.net/gh/wangbinyq/deno-jieba@wasm/mod.ts";
+} from "./deno-jieba/mod.ts";
 
 const bridge = new DenoBridge(
   Deno.args[0],
