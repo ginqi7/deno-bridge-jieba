@@ -20,6 +20,11 @@
 git clone git@github.com:ginqi7/deno-bridge-jieba.git ~/.emacs.d/lisp/deno-bridge-jieba
 #+end_src
 
+更新下载依赖的 submodule `deno-jieba`
+#+begin_src sh
+git submodule update --init --depth 1
+#+end_src
+
 ** add the path to ‘load-path
 #+begin_src sh
   (add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp/d/lisp/deno-bridge-jieba"))
